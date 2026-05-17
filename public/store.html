@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DigitalStore — Магазин цифровых товаров</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #111111;
+      --gray-dark: #444444;
+      --gray: #888888;
+      --gray-light: #e5e7eb;
+      --gray-bg: #f9fafb;
+      --white: #ffffff;
+      --accent: #111111;
+      --radius: 12px;
+      --radius-full: 999px;
+    }
+
+    body {
+      font-family: 'Golos Text', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input, textarea, select { font-family: inherit; font-size: 14px; }
+
+    /* ─── NAVBAR ─────────────────────────────────── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-light);
+      height: 64px;
+    }
+    .navbar-inner {
+      max-width: 1152px; margin: 0 auto; padding: 0 24px;
+      height: 100%; display: flex; align-items: center; justify-content: space-between;
+    }
+    .navbar-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; font-size: 17px; cursor: pointer;
+      transition: opacity .2s;
+    }
+    .navbar-logo:hover { opacity: .7; }
+    .navbar-links { display: flex; align-items: center; gap: 32px; }
+    .nav-link {
+      font-size: 14px; font-weight: 500; color: var(--gray);
+      cursor: pointer; transition: color .2s; position: relative; padding-bottom: 2px;
+    }
+    .nav-link:hover { color: var(--black); }
+    .nav-link.active { color: var(--black); }
+    .nav-link.active::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px; background: var(--black);
+    }
+    .btn-primary {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--black); color: var(--white);
+      border-radius: var(--radius-full); padding: 8px 18px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: #333; }
+    .btn-secondary {
+      display: flex; align-items: center; gap: 6px;
+      border: 1px solid var(--gray-light); color: var(--gray-dark);
+      border-radius: var(--radius-full); padding: 8px 18px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .btn-secondary:hover { border-color: #999; }
+
+    /* ─── LAYOUT ─────────────────────────────────── */
+    .page { display: none; padding-top: 64px; min-height: 100vh; }
+    .page.active { display: block; }
+    .container { max-width: 1152px; margin: 0 auto; padding: 0 24px; }
+    .section-label {
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--gray); margin-bottom: 12px;
+    }
+
+    /* ─── HOME ───────────────────────────────────── */
+    .hero { padding: 80px 0 60px; }
+    .hero h1 {
+      font-size: 52px; font-weight: 600; line-height: 1.15;
+      color: var(--black); margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 400; color: var(--gray); }
+    .hero p { font-size: 17px; color: var(--gray); max-width: 480px; margin-bottom: 32px; }
+    .hero-btns { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 56px; }
+    .hero-stats { display: flex; gap: 48px; padding-top: 32px; border-top: 1px solid var(--gray-light); }
+    .stat-num { font-size: 26px; font-weight: 700; }
+    .stat-label { font-size: 13px; color: var(--gray); margin-top: 2px; }
+
+    .categories-section { padding: 48px 0; background: var(--gray-bg); }
+    .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 24px; }
+    .cat-card {
+      background: var(--white); border: 1px solid var(--gray-light);
+      border-radius: var(--radius); padding: 16px; cursor: pointer;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .cat-card:hover { border-color: #bbb; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+    .cat-emoji { font-size: 24px; margin-bottom: 10px; display: block; }
+    .cat-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+    .cat-count { font-size: 12px; color: var(--gray); margin-top: 3px; }
+
+    .featured-section { padding: 48px 0; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .link-all { font-size: 13px; color: var(--gray); cursor: pointer; transition: color .2s; }
+    .link-all:hover { color: var(--black); }
+
+    .cta-banner {
+      background: var(--black); color: var(--white); padding: 48px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 24px;
+      flex-wrap: wrap;
+    }
+    .cta-banner h2 { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+    .cta-banner p { color: #aaa; font-size: 14px; }
+    .btn-white {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--white); color: var(--black);
+      border-radius: var(--radius-full); padding: 10px 22px;
+      font-size: 14px; font-weight: 500; cursor: pointer;
+      transition: background .2s; white-space: nowrap;
+    }
+    .btn-white:hover { background: #eee; }
+
+    /* ─── PRODUCT CARDS ───────────────────────────── */
+    .products-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .product-card {
+      background: var(--white); border: 1px solid var(--gray-light);
+      border-radius: var(--radius); padding: 18px; cursor: pointer;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .product-card:hover { border-color: #bbb; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+    .card-emoji { font-size: 30px; }
+    .badge-discount {
+      font-size: 11px; font-weight: 600; background: var(--black);
+      color: var(--white); padding: 2px 8px; border-radius: var(--radius-full);
+    }
+    .card-category { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+    .card-name { font-size: 14px; font-weight: 600; color: var(--black); margin-bottom: 6px; line-height: 1.4; }
+    .card-desc { font-size: 12px; color: var(--gray); line-height: 1.5; margin-bottom: 14px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-price { display: flex; align-items: center; gap: 8px; }
+    .price-main { font-size: 16px; font-weight: 700; }
+    .price-old { font-size: 12px; color: var(--gray); text-decoration: line-through; }
+
+    /* ─── CATALOG ────────────────────────────────── */
+    .catalog-page { padding: 40px 0 64px; }
+    .page-header { margin-bottom: 32px; }
+    .page-header h1 { font-size: 28px; font-weight: 600; margin-top: 8px; }
+
+    .filters-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap input {
+      width: 100%; padding: 10px 14px 10px 36px;
+      border: 1px solid var(--gray-light); border-radius: 8px;
+      font-size: 14px; transition: border-color .2s; outline: none;
+    }
+    .search-wrap input:focus { border-color: #999; }
+    .search-icon {
+      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+      color: var(--gray); pointer-events: none; font-size: 15px;
+    }
+    .sort-select {
+      padding: 10px 14px; border: 1px solid var(--gray-light);
+      border-radius: 8px; font-size: 14px; color: var(--gray-dark);
+      background: var(--white); cursor: pointer; outline: none;
+      transition: border-color .2s;
+    }
+    .sort-select:focus { border-color: #999; }
+
+    .cats-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .cat-btn {
+      padding: 6px 16px; border-radius: var(--radius-full);
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      background: #f3f4f6; color: var(--gray-dark); transition: background .2s, color .2s;
+    }
+    .cat-btn:hover { background: #e5e7eb; }
+    .cat-btn.active { background: var(--black); color: var(--white); }
+
+    .results-count { font-size: 12px; color: var(--gray); font-weight: 500; margin-bottom: 18px; }
+    .empty-state { text-align: center; padding: 80px 0; }
+    .empty-state .empty-emoji { font-size: 40px; margin-bottom: 12px; }
+    .empty-state p { color: var(--gray); font-size: 15px; }
+    .empty-state small { color: #aaa; font-size: 13px; }
+
+    /* ─── PRODUCT PAGE ───────────────────────────── */
+    .product-page-inner { padding: 32px 0 64px; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray); margin-bottom: 32px; }
+    .breadcrumb span { cursor: pointer; transition: color .2s; }
+    .breadcrumb span:hover { color: var(--black); }
+    .breadcrumb-sep { color: #ccc; }
+
+    .product-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; margin-bottom: 56px; }
+    .product-visual {
+      background: var(--gray-bg); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      aspect-ratio: 1;
+    }
+    .product-visual-emoji { font-size: 100px; }
+    .product-category { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 12px; font-weight: 600; }
+    .product-title { font-size: 30px; font-weight: 600; line-height: 1.25; margin-bottom: 20px; }
+    .product-desc { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 24px; }
+    .product-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+    .tag {
+      font-size: 12px; color: var(--gray); background: #f3f4f6;
+      padding: 4px 12px; border-radius: var(--radius-full);
+    }
+    .price-block { border-top: 1px solid var(--gray-light); padding-top: 28px; }
+    .price-row { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; }
+    .price-big { font-size: 32px; font-weight: 700; }
+    .price-crossed { font-size: 18px; color: var(--gray); text-decoration: line-through; }
+    .price-save {
+      font-size: 13px; font-weight: 500; color: #16a34a;
+      background: #f0fdf4; padding: 3px 10px; border-radius: var(--radius-full);
+    }
+    .buy-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .btn-buy {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--black); color: var(--white);
+      border-radius: var(--radius-full); padding: 13px 24px;
+      font-size: 15px; font-weight: 500; cursor: pointer; transition: background .2s;
+    }
+    .btn-buy:hover { background: #333; }
+    .btn-ask {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      border: 1px solid var(--gray-light); color: var(--gray-dark);
+      border-radius: var(--radius-full); padding: 13px 24px;
+      font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .2s;
+    }
+    .btn-ask:hover { border-color: #999; }
+    .delivery-note { font-size: 12px; color: var(--gray); display: flex; align-items: center; gap: 5px; }
+
+    .related-section h2 { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gray); margin-bottom: 20px; }
+
+    /* ─── CONTACTS ───────────────────────────────── */
+    .contacts-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding: 40px 0 64px; }
+    .contacts-intro { color: var(--gray); font-size: 15px; line-height: 1.7; margin-bottom: 40px; }
+    .contact-items { display: flex; flex-direction: column; gap: 24px; }
+    .contact-item { display: flex; align-items: flex-start; gap: 16px; }
+    .contact-icon {
+      width: 40px; height: 40px; background: #f3f4f6; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .contact-label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: .1em; font-weight: 600; margin-bottom: 3px; }
+    .contact-value { font-size: 15px; font-weight: 500; color: var(--black); }
+    .contact-sub { font-size: 12px; color: var(--gray); margin-top: 2px; }
+
+    .form-card { background: var(--gray-bg); border-radius: 20px; padding: 32px; }
+    .form-card h2 { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: var(--gray); display: block; margin-bottom: 6px; }
+    .form-input {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--gray-light);
+      border-radius: 8px; font-size: 14px; background: var(--white);
+      outline: none; transition: border-color .2s;
+    }
+    .form-input:focus { border-color: #999; }
+    textarea.form-input { resize: none; }
+    .btn-submit {
+      width: 100%; background: var(--black); color: var(--white);
+      border-radius: var(--radius-full); padding: 13px;
+      font-size: 15px; font-weight: 500; cursor: pointer;
+      transition: background .2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-submit:hover { background: #333; }
+
+    /* ─── MODAL ───────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.45); align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 20px; padding: 40px 32px;
+      max-width: 360px; width: 100%; text-align: center;
+      animation: scaleIn .2s ease;
+    }
+    @keyframes scaleIn {
+      from { transform: scale(.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-emoji { font-size: 52px; margin-bottom: 16px; display: block; }
+    .modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .modal p { font-size: 14px; color: var(--gray); line-height: 1.6; margin-bottom: 20px; }
+    .modal p strong { color: var(--black); }
+    .modal-phone {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: var(--black); color: var(--white);
+      border-radius: var(--radius-full); padding: 13px 24px;
+      font-size: 18px; font-weight: 600; text-decoration: none;
+      transition: background .2s; margin-bottom: 10px;
+    }
+    .modal-phone:hover { background: #333; }
+    .modal-note { font-size: 12px; color: var(--gray); margin-bottom: 18px; }
+    .modal-close { font-size: 13px; color: var(--gray); cursor: pointer; transition: color .2s; background: none; border: none; }
+    .modal-close:hover { color: var(--black); }
+
+    /* ─── FOOTER ─────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--gray-light); padding: 28px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-inner { max-width: 1152px; margin: 0 auto; width: 100%; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .footer-brand { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--gray); }
+    .footer-brand strong { color: var(--gray-dark); }
+    .footer-copy { font-size: 13px; color: var(--gray); }
+
+    /* ─── RESPONSIVE ─────────────────────────────── */
+    @media (max-width: 900px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+      .cat-grid { grid-template-columns: repeat(3, 1fr); }
+      .product-layout { grid-template-columns: 1fr; gap: 32px; }
+      .contacts-layout { grid-template-columns: 1fr; gap: 40px; }
+      .hero h1 { font-size: 36px; }
+    }
+    @media (max-width: 600px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .cat-grid { grid-template-columns: repeat(2, 1fr); }
+      .navbar-links { display: none; }
+      .hero h1 { font-size: 30px; }
+      .hero-stats { gap: 24px; }
+      .cta-banner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="navbar-logo" onclick="navigate('home')">⚡ DigitalStore</div>
+    <div class="navbar-links">
+      <span class="nav-link" data-page="home" onclick="navigate('home')">Главная</span>
+      <span class="nav-link" data-page="catalog" onclick="navigate('catalog')">Каталог</span>
+      <span class="nav-link" data-page="contacts" onclick="navigate('contacts')">Контакты</span>
+    </div>
+    <button class="btn-primary" onclick="navigate('catalog')">🛍️ Каталог</button>
+  </div>
+</nav>
+
+<!-- ═══════════ HOME PAGE ═══════════ -->
+<div id="page-home" class="page">
+  <div class="container">
+    <div class="hero">
+      <p class="section-label">Магазин цифровых товаров</p>
+      <h1>Программы.<br><em>Игры. Курсы.</em></h1>
+      <p>Лицензионное ПО, игры и обучающие курсы с мгновенной доставкой на почту.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="navigate('catalog')">Перейти в каталог →</button>
+        <button class="btn-secondary" onclick="navigate('contacts')">Связаться с нами</button>
+      </div>
+      <div class="hero-stats">
+        <div><div class="stat-num">25+</div><div class="stat-label">товаров</div></div>
+        <div><div class="stat-num">5</div><div class="stat-label">категорий</div></div>
+        <div><div class="stat-num">10k+</div><div class="stat-label">покупателей</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="categories-section">
+    <div class="container">
+      <p class="section-label">Категории</p>
+      <div class="cat-grid" id="home-cats"></div>
+    </div>
+  </div>
+
+  <div class="featured-section">
+    <div class="container">
+      <div class="section-header">
+        <p class="section-label" style="margin:0">Хиты продаж</p>
+        <span class="link-all" onclick="navigate('catalog')">Все товары →</span>
+      </div>
+      <div class="products-grid" id="featured-grid"></div>
+    </div>
+  </div>
+
+  <div class="cta-banner">
+    <div>
+      <h2>Нужна помощь с выбором?</h2>
+      <p>Наши специалисты помогут подобрать нужный продукт</p>
+    </div>
+    <button class="btn-white" onclick="navigate('contacts')">📞 Позвонить нам</button>
+  </div>
+</div>
+
+<!-- ═══════════ CATALOG PAGE ═══════════ -->
+<div id="page-catalog" class="page">
+  <div class="container catalog-page">
+    <div class="page-header">
+      <p class="section-label">Каталог</p>
+      <h1>Все товары</h1>
+    </div>
+    <div class="filters-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Поиск товаров..." oninput="renderCatalog()" />
+      </div>
+      <select class="sort-select" id="sort-select" onchange="renderCatalog()">
+        <option value="default">По умолчанию</option>
+        <option value="price-asc">Цена: по возрастанию</option>
+        <option value="price-desc">Цена: по убыванию</option>
+      </select>
+    </div>
+    <div class="cats-filter" id="cats-filter"></div>
+    <p class="results-count" id="results-count"></p>
+    <div class="products-grid" id="catalog-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <div class="empty-emoji">🔍</div>
+      <p>Ничего не найдено</p>
+      <small>Попробуйте изменить запрос или категорию</small>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PRODUCT PAGE ═══════════ -->
+<div id="page-product" class="page">
+  <div class="container product-page-inner">
+    <div class="breadcrumb">
+      <span onclick="navigate('home')">Главная</span>
+      <span class="breadcrumb-sep">/</span>
+      <span onclick="navigate('catalog')">Каталог</span>
+      <span class="breadcrumb-sep">/</span>
+      <span id="breadcrumb-name" style="color:#111;cursor:default"></span>
+    </div>
+    <div class="product-layout">
+      <div class="product-visual">
+        <span class="product-visual-emoji" id="product-emoji"></span>
+      </div>
+      <div>
+        <p class="product-category" id="product-category"></p>
+        <h1 class="product-title" id="product-title"></h1>
+        <p class="product-desc" id="product-desc"></p>
+        <div class="product-tags" id="product-tags"></div>
+        <div class="price-block">
+          <div class="price-row">
+            <span class="price-big" id="product-price"></span>
+            <span class="price-crossed" id="product-old-price" style="display:none"></span>
+            <span class="price-save" id="product-save" style="display:none"></span>
+          </div>
+          <div class="buy-btns">
+            <button class="btn-buy" onclick="openModal()">🛒 Купить</button>
+            <button class="btn-ask" onclick="navigate('contacts')">💬 Задать вопрос</button>
+          </div>
+          <p class="delivery-note">⚡ Мгновенная доставка на email</p>
+        </div>
+      </div>
+    </div>
+    <div class="related-section">
+      <h2>Похожие товары</h2>
+      <div class="products-grid" id="related-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CONTACTS PAGE ═══════════ -->
+<div id="page-contacts" class="page">
+  <div class="container">
+    <div class="contacts-layout">
+      <div>
+        <div class="page-header">
+          <p class="section-label">Контакты</p>
+          <h1>Свяжитесь с нами</h1>
+        </div>
+        <p class="contacts-intro">Мы готовы помочь с выбором, оформлением заказа и решением любых вопросов.</p>
+        <div class="contact-items">
+          <div class="contact-item">
+            <div class="contact-icon">📞</div>
+            <div>
+              <p class="contact-label">Телефон</p>
+              <p class="contact-value">+7 (800) 123-45-67</p>
+              <p class="contact-sub">Бесплатный звонок</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">✉️</div>
+            <div>
+              <p class="contact-label">Email</p>
+              <p class="contact-value">info@digitalstore.ru</p>
+              <p class="contact-sub">Ответим в течение 2 часов</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">🕐</div>
+            <div>
+              <p class="contact-label">Режим работы</p>
+              <p class="contact-value">Пн – Пт: 9:00 – 18:00</p>
+              <p class="contact-sub">Сб – Вс: выходной</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="contact-icon">📍</div>
+            <div>
+              <p class="contact-label">Адрес</p>
+              <p class="contact-value">г. Москва, ул. Цифровая, 1</p>
+              <p class="contact-sub">Только онлайн-доставка</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <h2>Написать нам</h2>
+        <form id="contact-form" onsubmit="submitForm(event)">
+          <div class="form-group">
+            <label class="form-label">Имя</label>
+            <input class="form-input" type="text" placeholder="Иван Иванов" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input class="form-input" type="tel" placeholder="+7 (___) ___-__-__" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сообщение</label>
+            <textarea class="form-input" rows="4" placeholder="Опишите ваш вопрос..." required></textarea>
+          </div>
+          <button type="submit" class="btn-submit">📨 Отправить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">⚡ <strong>DigitalStore</strong> — Магазин цифровых товаров</div>
+    <span class="footer-copy">© 2024 DigitalStore. Все права защищены.</span>
+  </div>
+</footer>
+
+<!-- ═══════════ MODAL ═══════════ -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <span class="modal-emoji" id="modal-emoji"></span>
+    <h3>Оформление заказа</h3>
+    <p>Для приобретения товара <strong id="modal-product-name"></strong> обратитесь к нам по номеру телефона:</p>
+    <a class="modal-phone" href="tel:+78001234567">📞 +7 (800) 123-45-67</a>
+    <p class="modal-note">Звонок бесплатный · Пн–Пт 9:00–18:00</p>
+    <button class="modal-close" onclick="closeModal()">Закрыть</button>
+  </div>
+</div>
+
+<script>
+  // ─── DATA ────────────────────────────────────────────
+  const products = [
+    { id:1, name:'Microsoft Office 2024', category:'Программное обеспечение', price:4990, oldPrice:8990, description:'Полный пакет офисных приложений: Word, Excel, PowerPoint, Outlook.', fullDescription:'Microsoft Office 2024 — это мощный пакет офисных приложений для работы с документами, таблицами, презентациями и электронной почтой. Включает Word, Excel, PowerPoint, Outlook, Access и Publisher. Лицензия на 1 ПК, бессрочная активация.', emoji:'📄', tags:['офис','документы','таблицы'], featured:true },
+    { id:2, name:'Adobe Photoshop 2024', category:'Программное обеспечение', price:3490, oldPrice:5990, description:'Профессиональный редактор изображений и графический дизайн.', fullDescription:'Adobe Photoshop 2024 — отраслевой стандарт в обработке фотографий и создании графики. Нейросетевые инструменты, улучшенная работа с масками, новые фильтры. Подписка на 12 месяцев, включая облачное хранилище 100 ГБ.', emoji:'🎨', tags:['дизайн','фото','графика'], featured:true },
+    { id:3, name:'Windows 11 Pro', category:'Программное обеспечение', price:6990, description:'Лицензионный ключ активации Windows 11 Professional.', fullDescription:'Windows 11 Pro — операционная система нового поколения с обновлённым интерфейсом, улучшенной безопасностью и интеграцией с Microsoft Teams. Лицензия OEM, бессрочная, привязывается к материнской плате.', emoji:'🖥️', tags:['ОС','Windows','система'], featured:true },
+    { id:4, name:'Cyberpunk 2077', category:'Игры', price:1990, oldPrice:3499, description:'Открытый мир ближайшего будущего в мегаполисе Найт-Сити.', fullDescription:'Cyberpunk 2077 — ролевой экшен в открытом мире от CD PROJEKT RED. Играйте за наёмника Ви в мрачном футуристичном городе. Ключ активации Steam, включает все обновления и дополнение Phantom Liberty.', emoji:'🎮', tags:['RPG','открытый мир','sci-fi'] },
+    { id:5, name:'The Witcher 3: Wild Hunt', category:'Игры', price:890, oldPrice:1799, description:'Легендарная RPG с огромным открытым миром и богатым сюжетом.', fullDescription:'The Witcher 3: Wild Hunt — одна из лучших RPG всех времён. Играйте за Геральта из Ривии, охотника на монстров. Complete Edition включает игру и все DLC: Hearts of Stone и Blood and Wine. Ключ Steam.', emoji:'⚔️', tags:['RPG','фэнтези','открытый мир'] },
+    { id:6, name:'Red Dead Redemption 2', category:'Игры', price:1499, description:'Эпическое приключение на Диком Западе с кинематографичным сюжетом.', fullDescription:'Red Dead Redemption 2 — шедевр от Rockstar Games, рассказывающий историю аутлоу Артура Моргана в 1899 году. Невероятная атмосфера, детализированный открытый мир, захватывающий онлайн-режим. Ключ Rockstar.', emoji:'🤠', tags:['приключение','вестерн','открытый мир'] },
+    { id:7, name:'Курс «Python с нуля»', category:'Курсы', price:2490, oldPrice:4990, description:'Полный видеокурс по программированию на Python для начинающих.', fullDescription:'Курс «Python с нуля» — 80 часов видеоуроков, практические задания, проверка кода, сертификат об окончании. Темы: основы языка, ООП, работа с файлами, базы данных, Flask, Django, автоматизация. Пожизненный доступ.', emoji:'🐍', tags:['Python','программирование','backend'], featured:true },
+    { id:8, name:'Курс «Веб-дизайн в Figma»', category:'Курсы', price:1990, oldPrice:3990, description:'Научитесь создавать современные интерфейсы в Figma с нуля.', fullDescription:'Курс «Веб-дизайн в Figma» — 45 часов практических уроков. Узнаете принципы UX/UI, научитесь работать с автолейаутами, компонентами и вариантами. Создадите 5 реальных проектов для портфолио. Сертификат.', emoji:'✏️', tags:['дизайн','Figma','UI/UX'] },
+    { id:9, name:'Курс «Английский B2»', category:'Курсы', price:3990, description:'Интенсивный курс английского языка до уровня Upper-Intermediate.', fullDescription:'Курс «Английский B2» — 120 уроков с носителями языка, интерактивные упражнения, разговорные клубы, проверка домашних заданий. Подготовка к IELTS и TOEFL. Доступ 2 года.', emoji:'🇬🇧', tags:['английский','языки','образование'] },
+    { id:10, name:'Курс «Excel: Продвинутый»', category:'Курсы', price:1290, oldPrice:2490, description:'Сводные таблицы, макросы, Power Query и продвинутые формулы.', fullDescription:'Курс «Excel: Продвинутый» охватывает сводные таблицы, макросы VBA, Power Query, Power Pivot, продвинутые формулы массивов. 35 часов уроков с реальными кейсами из бизнеса. Пожизненный доступ, сертификат.', emoji:'📊', tags:['Excel','аналитика','таблицы'] },
+    { id:11, name:'Шаблон Landing Page «Бизнес»', category:'Шаблоны', price:890, description:'Профессиональный HTML/CSS шаблон для бизнес-лендинга.', fullDescription:'Шаблон Landing Page «Бизнес» — адаптивный HTML5/CSS3/JS шаблон с 12 блоками: hero, услуги, преимущества, команда, портфолио, отзывы, цены, FAQ, форма. Исходный код + PSD-макет.', emoji:'🏢', tags:['HTML','лендинг','бизнес'] },
+    { id:12, name:'Шаблон интернет-магазина', category:'Шаблоны', price:1490, oldPrice:2990, description:'Готовый шаблон для интернет-магазина на React + TypeScript.', fullDescription:'Шаблон интернет-магазина — полнофункциональный React шаблон с каталогом, корзиной, фильтрами, личным кабинетом и адаптивной вёрсткой. Включает 20+ компонентов, Tailwind CSS, TypeScript, документацию.', emoji:'🛒', tags:['React','магазин','шаблон'] },
+    { id:13, name:'Шаблон резюме', category:'Шаблоны', price:390, description:'Пакет из 10 профессиональных шаблонов резюме в Word и PDF.', fullDescription:'Шаблон резюме — 10 современных дизайнов для разных сфер: IT, маркетинг, дизайн, менеджмент. Форматы DOCX и PDF. Инструкция по заполнению, подбор шрифтов. Редактируются в Word и Google Docs.', emoji:'📝', tags:['резюме','Word','карьера'] },
+    { id:14, name:'Kaspersky Total Security', category:'Антивирусы', price:1990, oldPrice:3590, description:'Комплексная защита для 3 устройств на 12 месяцев.', fullDescription:'Kaspersky Total Security — полная защита от вирусов, шпионского ПО, фишинга и онлайн-угроз. Защита 3 устройств (Windows, Mac, Android, iOS). Включает VPN, менеджер паролей, родительский контроль.', emoji:'🛡️', tags:['антивирус','защита','безопасность'], featured:true },
+    { id:15, name:'ESET NOD32 Antivirus', category:'Антивирусы', price:1190, description:'Лёгкий и быстрый антивирус с минимальной нагрузкой на систему.', fullDescription:'ESET NOD32 Antivirus — надёжный антивирус с технологией обнаружения угроз ThreatSense. Минимальная нагрузка на систему, защита от вирусов, руткитов и эксплойтов. Лицензия на 1 ПК, 12 месяцев.', emoji:'🔐', tags:['антивирус','лёгкий','ESET'] },
+    { id:16, name:'AutoCAD 2024', category:'Программное обеспечение', price:7990, description:'Профессиональное САПР для 2D и 3D проектирования.', fullDescription:'AutoCAD 2024 — ведущая система автоматизированного проектирования от Autodesk. Создавайте точные 2D чертежи и 3D модели. Инструменты автоматизации, облачное сотрудничество, мобильное приложение. Подписка 12 месяцев.', emoji:'📐', tags:['САПР','проектирование','3D'] },
+    { id:17, name:'GTA V: Premium Edition', category:'Игры', price:1290, oldPrice:2499, description:'Культовый открытый мир Лос-Сантоса + онлайн-режим.', fullDescription:'GTA V: Premium Edition — полная версия игры с синглплеером, GTA Online и набором стартового контента. Три протагониста, огромный открытый мир, постоянные обновления онлайна. Ключ Steam/Rockstar.', emoji:'🚗', tags:['открытый мир','экшен','онлайн'] },
+    { id:18, name:'Курс «Фотография с нуля»', category:'Курсы', price:2990, description:'От новичка до уверенного фотографа за 3 месяца.', fullDescription:'Курс «Фотография с нуля» — 60 уроков: работа с камерой, экспозиция, композиция, свет, обработка в Lightroom. 15 практических заданий с разбором, живые вебинары, сообщество студентов. Доступ 1 год.', emoji:'📸', tags:['фото','Lightroom','творчество'] },
+    { id:19, name:'Шаблон Notion для продуктивности', category:'Шаблоны', price:490, description:'Система управления задачами, проектами и целями в Notion.', fullDescription:'Шаблон Notion для продуктивности — готовая система GTD с планировщиком недели, трекером привычек, базой знаний и дашбордом проектов. Подробная инструкция по настройке. Мгновенное скачивание.', emoji:'🗂️', tags:['Notion','продуктивность','GTD'] },
+    { id:20, name:'Dr.Web Security Space', category:'Антивирусы', price:1490, description:'Российский антивирус для 2 устройств, лицензия 1 год.', fullDescription:'Dr.Web Security Space — российский антивирус с сертификатом ФСТЭК. Защита от вирусов, троянов, шифровальщиков, спама и мошеннических сайтов. Родительский контроль, защита камеры. 2 устройства, 12 месяцев.', emoji:'🕷️', tags:['антивирус','российский','ФСТЭК'] },
+    { id:21, name:'Adobe Illustrator 2024', category:'Программное обеспечение', price:3290, description:'Векторный редактор для создания логотипов и иллюстраций.', fullDescription:'Adobe Illustrator 2024 — профессиональный инструмент для создания векторной графики. Логотипы, иконки, иллюстрации, типографика. Улучшенные нейросетевые инструменты, интеграция с Creative Cloud. Подписка 12 месяцев.', emoji:'🖊️', tags:['дизайн','вектор','Adobe'] },
+    { id:22, name:'Stardew Valley', category:'Игры', price:479, description:'Уютный симулятор фермы с элементами RPG и общения с жителями.', fullDescription:'Stardew Valley — инди-игра про управление фермой в небольшой деревушке. Выращивайте урожай, разводите животных, исследуйте шахты, заводите друзей. Неограниченный геймплей, регулярные бесплатные обновления. Ключ Steam.', emoji:'🌾', tags:['симулятор','инди','расслабляющий'] },
+    { id:23, name:'Курс «SQL для аналитиков»', category:'Курсы', price:1790, description:'Практический курс SQL от простых запросов до оконных функций.', fullDescription:'Курс «SQL для аналитиков» — 40 уроков с практикой на реальных данных. Темы: SELECT, JOIN, агрегация, подзапросы, CTE, оконные функции, оптимизация. PostgreSQL + интерактивная песочница. Сертификат.', emoji:'🗃️', tags:['SQL','аналитика','базы данных'] },
+    { id:24, name:'Шаблон бизнес-плана', category:'Шаблоны', price:690, description:'Профессиональный шаблон бизнес-плана в Word и Excel.', fullDescription:'Шаблон бизнес-плана — структурированный документ на 30+ страниц с финансовыми таблицами, графиками и инструкцией по заполнению. Форматы DOCX и XLSX. Подходит для банков, инвесторов и грантовых программ.', emoji:'📋', tags:['бизнес','план','финансы'] },
+    { id:25, name:'Norton 360 Premium', category:'Антивирусы', price:2490, oldPrice:4990, description:'Защита 5 устройств + VPN + облачный бэкап 75 ГБ.', fullDescription:'Norton 360 Premium — комплексная защита для 5 устройств на разных платформах. Включает антивирус, умный файрвол, VPN без ограничений, облачный бэкап 75 ГБ, менеджер паролей и мониторинг даркнета. 12 месяцев.', emoji:'🔒', tags:['антивирус','VPN','Norton'] },
+  ];
+
+  const categories = ['Программное обеспечение', 'Игры', 'Курсы', 'Шаблоны', 'Антивирусы'];
+  const catEmojis = { 'Программное обеспечение':'💻', 'Игры':'🎮', 'Курсы':'📚', 'Шаблоны':'📁', 'Антивирусы':'🛡️' };
+
+  let currentCategory = 'Все';
+  let currentProduct = null;
+
+  // ─── FORMAT ──────────────────────────────────────────
+  function fmt(n) { return n.toLocaleString('ru-RU') + ' ₽'; }
+
+  // ─── PRODUCT CARD HTML ───────────────────────────────
+  function cardHTML(p) {
+    return `
+      <div class="product-card" onclick="openProduct(${p.id})">
+        <div class="card-top">
+          <span class="card-emoji">${p.emoji}</span>
+          ${p.oldPrice ? '<span class="badge-discount">Скидка</span>' : ''}
+        </div>
+        <p class="card-category">${p.category}</p>
+        <p class="card-name">${p.name}</p>
+        <p class="card-desc">${p.description}</p>
+        <div class="card-price">
+          <span class="price-main">${fmt(p.price)}</span>
+          ${p.oldPrice ? `<span class="price-old">${fmt(p.oldPrice)}</span>` : ''}
+        </div>
+      </div>`;
+  }
+
+  // ─── HOME ────────────────────────────────────────────
+  function renderHome() {
+    // Categories
+    const catsEl = document.getElementById('home-cats');
+    catsEl.innerHTML = categories.map(cat => {
+      const count = products.filter(p => p.category === cat).length;
+      return `<div class="cat-card" onclick="navigate('catalog')">
+        <span class="cat-emoji">${catEmojis[cat]}</span>
+        <p class="cat-name">${cat}</p>
+        <p class="cat-count">${count} товаров</p>
+      </div>`;
+    }).join('');
+
+    // Featured
+    document.getElementById('featured-grid').innerHTML =
+      products.filter(p => p.featured).map(cardHTML).join('');
+  }
+
+  // ─── CATALOG ─────────────────────────────────────────
+  function renderCatalog() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const sort   = document.getElementById('sort-select').value;
+
+    let list = products.filter(p =>
+      (currentCategory === 'Все' || p.category === currentCategory) &&
+      (search === '' || p.name.toLowerCase().includes(search) || p.description.toLowerCase().includes(search))
+    );
+
+    if (sort === 'price-asc')  list = list.sort((a,b) => a.price - b.price);
+    if (sort === 'price-desc') list = list.sort((a,b) => b.price - a.price);
+
+    document.getElementById('results-count').textContent = `Найдено: ${list.length} товаров`;
+    const grid = document.getElementById('catalog-grid');
+    const empty = document.getElementById('empty-state');
+
+    if (list.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; }
+    else { empty.style.display = 'none'; grid.innerHTML = list.map(cardHTML).join(''); }
+  }
+
+  function renderCategoryFilter() {
+    const el = document.getElementById('cats-filter');
+    el.innerHTML = ['Все', ...categories].map(cat => `
+      <button class="cat-btn ${cat === currentCategory ? 'active' : ''}"
+        onclick="setCategory('${cat}')">${cat}</button>
+    `).join('');
+  }
+
+  function setCategory(cat) {
+    currentCategory = cat;
+    renderCategoryFilter();
+    renderCatalog();
+  }
+
+  // ─── PRODUCT PAGE ─────────────────────────────────────
+  function openProduct(id) {
+    currentProduct = products.find(p => p.id === id);
+    if (!currentProduct) return;
+
+    const p = currentProduct;
+    document.getElementById('breadcrumb-name').textContent = p.name;
+    document.getElementById('product-emoji').textContent = p.emoji;
+    document.getElementById('product-category').textContent = p.category;
+    document.getElementById('product-title').textContent = p.name;
+    document.getElementById('product-desc').textContent = p.fullDescription;
+    document.getElementById('product-price').textContent = fmt(p.price);
+
+    const oldEl  = document.getElementById('product-old-price');
+    const saveEl = document.getElementById('product-save');
+    if (p.oldPrice) {
+      oldEl.textContent = fmt(p.oldPrice);
+      oldEl.style.display = 'inline';
+      saveEl.textContent = `Экономия ${fmt(p.oldPrice - p.price)}`;
+      saveEl.style.display = 'inline';
+    } else {
+      oldEl.style.display = 'none';
+      saveEl.style.display = 'none';
+    }
+
+    document.getElementById('product-tags').innerHTML =
+      p.tags.map(t => `<span class="tag">${t}</span>`).join('');
+
+    const related = products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
+    document.getElementById('related-grid').innerHTML = related.map(cardHTML).join('');
+
+    navigate('product');
+  }
+
+  // ─── MODAL ───────────────────────────────────────────
+  function openModal() {
+    if (!currentProduct) return;
+    document.getElementById('modal-emoji').textContent = currentProduct.emoji;
+    document.getElementById('modal-product-name').textContent = `«${currentProduct.name}»`;
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  // ─── NAVIGATION ──────────────────────────────────────
+  function navigate(page, id) {
+    if (page === 'product' && id) { openProduct(id); return; }
+
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => {
+      el.classList.toggle('active', el.dataset.page === page);
+    });
+
+    const el = document.getElementById('page-' + page);
+    if (el) { el.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+    if (page === 'catalog') { renderCategoryFilter(); renderCatalog(); }
+  }
+
+  // ─── FORM ────────────────────────────────────────────
+  function submitForm(e) {
+    e.preventDefault();
+    alert('Спасибо! Мы свяжемся с вами в ближайшее время.');
+    e.target.reset();
+  }
+
+  // ─── INIT ────────────────────────────────────────────
+  renderHome();
+  navigate('home');
+</script>
+</body>
+</html>
