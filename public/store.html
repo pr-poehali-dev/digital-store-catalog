@@ -545,8 +545,26 @@
 </div>
 
 <script>
-  // ─── DATA ────────────────────────────────────────────
-  const products = [
+  // ─── API ─────────────────────────────────────────────
+  const API_URL = 'https://functions.poehali.dev/1842f8f7-d5b6-4f7b-832e-0bc6f97032a2';
+
+  let products = [];
+
+  // ─── LOAD FROM DB ────────────────────────────────────
+  async function loadProducts() {
+    try {
+      const res = await fetch(API_URL);
+      products = await res.json();
+    } catch (e) {
+      console.error('Ошибка загрузки товаров:', e);
+      products = [];
+    }
+    renderHome();
+    navigate('home');
+  }
+
+  // ─── DUMMY DATA (убрано — теперь всё из PostgreSQL) ──
+  const _removed_products = [
     { id:1, name:'Microsoft Office 2024', category:'Программное обеспечение', price:4990, oldPrice:8990, description:'Полный пакет офисных приложений: Word, Excel, PowerPoint, Outlook.', fullDescription:'Microsoft Office 2024 — это мощный пакет офисных приложений для работы с документами, таблицами, презентациями и электронной почтой. Включает Word, Excel, PowerPoint, Outlook, Access и Publisher. Лицензия на 1 ПК, бессрочная активация.', emoji:'📄', tags:['офис','документы','таблицы'], featured:true },
     { id:2, name:'Adobe Photoshop 2024', category:'Программное обеспечение', price:3490, oldPrice:5990, description:'Профессиональный редактор изображений и графический дизайн.', fullDescription:'Adobe Photoshop 2024 — отраслевой стандарт в обработке фотографий и создании графики. Нейросетевые инструменты, улучшенная работа с масками, новые фильтры. Подписка на 12 месяцев, включая облачное хранилище 100 ГБ.', emoji:'🎨', tags:['дизайн','фото','графика'], featured:true },
     { id:3, name:'Windows 11 Pro', category:'Программное обеспечение', price:6990, description:'Лицензионный ключ активации Windows 11 Professional.', fullDescription:'Windows 11 Pro — операционная система нового поколения с обновлённым интерфейсом, улучшенной безопасностью и интеграцией с Microsoft Teams. Лицензия OEM, бессрочная, привязывается к материнской плате.', emoji:'🖥️', tags:['ОС','Windows','система'], featured:true },
@@ -574,6 +592,7 @@
     { id:25, name:'Norton 360 Premium', category:'Антивирусы', price:2490, oldPrice:4990, description:'Защита 5 устройств + VPN + облачный бэкап 75 ГБ.', fullDescription:'Norton 360 Premium — комплексная защита для 5 устройств на разных платформах. Включает антивирус, умный файрвол, VPN без ограничений, облачный бэкап 75 ГБ, менеджер паролей и мониторинг даркнета. 12 месяцев.', emoji:'🔒', tags:['антивирус','VPN','Norton'] },
   ];
 
+  // ────────────────────────────────────────────────────
   const categories = ['Программное обеспечение', 'Игры', 'Курсы', 'Шаблоны', 'Антивирусы'];
   const catEmojis = { 'Программное обеспечение':'💻', 'Игры':'🎮', 'Курсы':'📚', 'Шаблоны':'📁', 'Антивирусы':'🛡️' };
 
@@ -719,8 +738,7 @@
   }
 
   // ─── INIT ────────────────────────────────────────────
-  renderHome();
-  navigate('home');
+  loadProducts();
 </script>
 </body>
 </html>
